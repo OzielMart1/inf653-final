@@ -7,6 +7,14 @@ const path = require('path');
 // Connect to MongoDB
 connectDB();
 
+//Serve static files from the views directory
+app.use(express.static(path.join(__dirname, 'views')));
+
+//Route to server index.html
+app.get('/', (req,res)=>{
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+
 
 const express = require('express');
 const app = express();
