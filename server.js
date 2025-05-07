@@ -1,3 +1,4 @@
+const express = require('express');
 require('dotenv').config();
 const connectDB = require('./config/dbConn');
 const mongoose = require('mongoose');
@@ -7,6 +8,11 @@ const path = require('path');
 // Connect to MongoDB
 connectDB();
 
+const app = express();
+
+// Middleware
+app.use(express.json());
+
 //Serve static files from the views directory
 app.use(express.static(path.join(__dirname, 'views')));
 
@@ -15,13 +21,8 @@ app.get('/', (req,res)=>{
   res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-
-const express = require('express');
-const app = express();
-
-// Middleware
-app.use(express.json());
 app.use('/states', statesRouter);
+
 
 // 404 Catch-all
 app.all('*', (req, res) => {
