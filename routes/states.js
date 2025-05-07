@@ -1,20 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const statesController = require('../controllers/statesController');
+const verifyState = require('../middleware/verifyState');
 
-//GET routes 
-router.get('/', statesController.getAllStates);
-router.get('/:state', statesController.getState);
-router.get('/:state/capital', statesController.getCapital);
-router.get('/:state/nickname', statesController.getNickname);
-router.get('/:state/population', statesController.getPopulation);
-router.get('/:state/admission', statesController.getAdmission);
-router.get('/:state/funfact', statesController.getRandomFunFact);
+router.route('/:state')
+  .get(verifyState, statesController.getState);
 
-//Post/ Patch/ Delete
-router.post('/:state/funfact', statesController.addFunFact);
-router.patch('/:state/funfact', statesController.updateFunFact);
-router.delete('/:state/funfact', statesController.deleteFunFact);
+router.route('/:state/funfact')
+  .get(verifyState, statesController.getRandomFunFact)
+  .post(verifyState, statesController.addFunFact)
+  .patch(verifyState, statesController.updateFunFact)
+  .delete(verifyState, statesController.deleteFunFact);
+
+router.route('/:state/capital').get(verifyState, statesController.getCapital);
+router.route('/:state/nickname').get(verifyState, statesController.getNickname);
+router.route('/:state/population').get(verifyState, statesController.getPopulation);
+router.route('/:state/admission').get(verifyState, statesController.getAdmission);
+
 
 module.exports = router;
 
