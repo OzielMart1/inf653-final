@@ -90,7 +90,7 @@ const getRandomFunFact = async (req, res) => {
 
     const dbState = await State.findOne({ stateCode });
     if (!dbState || !dbState.funfacts || dbState.funfacts.length === 0) {
-        return res.status(404).json({ message: `No Fun Facts found for ${state.name}` });
+        return res.status(404).json({ message: `No Fun Facts found for ${state.state}` });
     }
 
     const randomFact = dbState.funfacts[Math.floor(Math.random() * dbState.funfacts.length)];

@@ -5,7 +5,7 @@ const verifyState = (req, res, next) => {
   const state = statesData.find(st => st.code === stateAbbr);
 
   if (!state) {
-    return res.status(400).json({ error: 'Invalid state abbreviation parameter' });
+    return res.status(400).json({ message: 'Invalid state abbreviation parameter' });
   }
 
   req.stateCode = stateAbbr;
