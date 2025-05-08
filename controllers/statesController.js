@@ -44,7 +44,7 @@ const getCapital = (req, res) => {
     const state = statesData.find(state => state.code === stateCode);
 
     if (state) {
-        res.json({ state: state.name, capital: state.capital_city });
+        res.json({ state: state.state, capital: state.capital_city });
     } else {
         res.status(404).json({ message: 'Invalid state abbreviation parameter' });
     }
@@ -55,7 +55,7 @@ const getNickname = (req, res) => {
     const state = statesData.find(state => state.code === stateCode);
 
     if (state) {
-        res.json({ state: state.name, nickname: state.nickname });
+        res.json({ state: state.state, nickname: state.nickname });
     } else {
         res.status(404).json({ message: 'Invalid state abbreviation parameter' });
     }
@@ -66,7 +66,7 @@ const getPopulation = (req, res) => {
     const state = statesData.find(state => state.code === stateCode);
 
     if (state) {
-        res.json({ state: state.name, population: state.population.toLocaleString() });
+        res.json({ state: state.state, population: state.population.toLocaleString() });
     } else {
         res.status(404).json({ message: 'Invalid state abbreviation parameter' });
     }
@@ -77,7 +77,7 @@ const getAdmission = (req, res) => {
     const state = statesData.find(state => state.code === stateCode);
 
     if (state) {
-        res.json({ state: state.name, admitted: state.admission_date });
+        res.json({ state: state.state, admitted: state.admission_date });
     } else {
         res.status(404).json({ message: 'Invalid state abbreviation parameter' });
     }
@@ -134,12 +134,12 @@ const updateFunFact = async (req, res) => {
 
     const dbState = await State.findOne({ stateCode });
     if (!dbState || !dbState.funfacts || dbState.funfacts.length === 0) {
-        return res.status(404).json({ message: `No Fun Facts found for ${state.name}` });
+        return res.status(404).json({ message: `No Fun Facts found for ${state.state}` });
     }
 
     const realIndex = index - 1;
     if (realIndex < 0 || realIndex >= dbState.funfacts.length) {
-        return res.status(400).json({ message: `No Fun Fact found at that index for ${state.name}` });
+        return res.status(400).json({ message: `No Fun Fact found at that index for ${state.state}` });
     }
 
     dbState.funfacts[realIndex] = funfact;
@@ -160,12 +160,12 @@ const deleteFunFact = async (req, res) => {
 
     const dbState = await State.findOne({ stateCode });
     if (!dbState || !dbState.funfacts || dbState.funfacts.length === 0) {
-        return res.status(404).json({ message: `No Fun Facts found for ${state.name}` });
+        return res.status(404).json({ message: `No Fun Facts found for ${state.state}` });
     }
 
     const realIndex = index - 1;
     if (realIndex < 0 || realIndex >= dbState.funfacts.length) {
-        return res.status(400).json({ message: `No Fun Fact found at that index for ${state.name}` });
+        return res.status(400).json({ message: `No Fun Fact found at that index for ${state.state}` });
     }
 
     dbState.funfacts.splice(realIndex, 1);
