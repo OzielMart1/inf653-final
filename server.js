@@ -4,6 +4,13 @@ const connectDB = require('./config/dbConn');
 const mongoose = require('mongoose');
 const statesRouter = require('./routes/states'); // Corrected path
 const path = require('path');
+const cors = require('cors')
+
+
+//allow netlify 
+app._router.use(cors({
+  origin: 'https://dazzling-snickerdoodle-777101.netlify.app'
+}));
 
 // Connect to MongoDB
 connectDB();
