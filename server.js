@@ -10,9 +10,9 @@ const cors = require('cors')
 // Connect to MongoDB
 connectDB();
 
-app.use(cors());
-
 const app = express();
+
+app.use(cors());
 
 // Middleware
 app.use(express.json());
