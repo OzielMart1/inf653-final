@@ -99,80 +99,124 @@ const getRandomFunFact = async (req, res) => {
 
 const addFunFact = async (req, res) => {
     const stateCode = req.params.state.toUpperCase();
-    const state = statesData.find(st => st.code === stateCode);
-    if (!state) return res.status(404).json({ message: 'Invalid state abbreviation parameter' });
+    const { funfacts } = req.body;
 
-    if (!req.body.funfacts || !Array.isArray(req.body.funfacts)) {
+    // Case: funfacts is missing or empty
+    if (!funfacts || (Array.isArray(funfacts) && funfacts.length === 0)) {
+        return res.status(400).json({ message: 'State fun facts value required' });
+    }
+
+    // Case: funfacts exists but is not an array
+    if (!Array.isArray(funfacts)) {
         return res.status(400).json({ message: 'State fun facts value must be an array' });
     }
 
     try {
-        let stateDoc = await State.findOne({ stateCode });
+        let state = await State.findOne({ stateCode });
 
-        if (!stateDoc) {
-            stateDoc = new State({ stateCode, funfacts: req.body.funfacts });
+        if (!state) {
+            state = new State({ stateCode, funfacts });
         } else {
-            stateDoc.funfacts = [...stateDoc.funfacts, ...req.body.funfacts];
+            state.funfacts = [...state.funfacts, ...funfacts];
         }
 
-        await stateDoc.save();
-        res.status(201).json(stateDoc);
+        await state.save();
+        res.status(201).json(state);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 };
 
 const updateFunFact = async (req, res) => {
-    const stateCode = req.params.state.toUpperCase();
-    const state = statesData.find(st => st.code === stateCode);
-    if (!state) return res.status(404).json({ message: 'Invalid state abbreviation parameter' });
+  const stateAbbr = req.params.state.toUpperCase();
+  const { index, funfact } = req.body;
 
-    const { index, funfact } = req.body;
-    if (index === undefined || funfact === undefined) {
-        return res.status(400).json({ message: 'State fun fact index value and fun fact value are required' });
+  // Validate request body
+  if (index === undefined) {
+    return res.status(400).json({ message: 'State fun fact index value required' });
+  }
+  if (!funfact || typeof funfact !== 'string') {
+    return res.status(400).json({ message: 'State fun fact value required' });
+  }
+
+  // Lookup full state name for error messages
+  const stateData = statesData.find((st) => st.code === stateAbbr);
+  if (!stateData) {
+    return res.status(404).json({ message: 'Invalid state abbreviation parameter' });
+  }
+
+  try {
+    const state = await State.findOne({ stateCode: stateAbbr });
+    if (!state || !state.funfacts || state.funfacts.length === 0) {
+      return res.status(404).json({ message: `No Fun Facts found for ${stateData.state}` });
     }
 
-    const dbState = await State.findOne({ stateCode });
-    if (!dbState || !dbState.funfacts || dbState.funfacts.length === 0) {
-        return res.status(404).json({ message: `No Fun Facts found for ${state.state}` });
+    const zeroIndex = index - 1;
+    if (zeroIndex < 0 || zeroIndex >= state.funfacts.length) {
+      return res.status(404).json({ message: `No Fun Fact found at that index for ${stateData.state}` });
     }
 
-    const realIndex = index - 1;
-    if (realIndex < 0 || realIndex >= dbState.funfacts.length) {
-        return res.status(400).json({ message: `No Fun Fact found at that index for ${state.state}` });
-    }
+    // Update and save
+    state.funfacts[zeroIndex] = funfact;
+    const result = await state.save();
 
-    dbState.funfacts[realIndex] = funfact;
-    await dbState.save();
+    res.json({
+      _id: result._id,
+      code: result.stateCode,
+      funfacts: result.funfacts,
+      __v: result.__v
+    });
 
-    res.json(dbState);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 const deleteFunFact = async (req, res) => {
-    const stateCode = req.params.state.toUpperCase();
-    const state = statesData.find(st => st.code === stateCode);
-    if (!state) return res.status(404).json({ message: 'Invalid state abbreviation parameter' });
+    const stateAbbr = req.params.state.toUpperCase();
+  const { index } = req.body;
 
-    const { index } = req.body;
-    if (index === undefined) {
-        return res.status(400).json({ message: 'State fun fact index value is required' });
+  if (index === undefined) {
+    return res.status(400).json({ message: 'State fun fact index value required' });
+  }
+
+  const stateData = statesData.find((st) => st.code === stateAbbr);
+  if (!stateData) {
+    return res.status(404).json({ message: 'Invalid state abbreviation parameter' });
+  }
+
+  try {
+    const state = await State.findOne({ stateCode: stateAbbr });
+    if (!state || !state.funfacts || state.funfacts.length === 0) {
+      return res.status(404).json({ message: `No Fun Facts found for ${stateData.state}` });
     }
 
-    const dbState = await State.findOne({ stateCode });
-    if (!dbState || !dbState.funfacts || dbState.funfacts.length === 0) {
-        return res.status(404).json({ message: `No Fun Facts found for ${state.state}` });
+    const zeroIndex = index - 1;
+
+    if (zeroIndex < 0 || zeroIndex >= state.funfacts.length) {
+      return res.status(404).json({ message: `No Fun Fact found at that index for ${stateData.state}` });
     }
 
-    const realIndex = index - 1;
-    if (realIndex < 0 || realIndex >= dbState.funfacts.length) {
-        return res.status(400).json({ message: `No Fun Fact found at that index for ${state.state}` });
-    }
+    // Remove the fun fact at the specified index
+    state.funfacts.splice(zeroIndex, 1);
+    const result = await state.save();
 
-    dbState.funfacts.splice(realIndex, 1);
-    await dbState.save();
+    res.json({
+      _id: result._id,
+      code: state.stateCode,
+      funfacts: result.funfacts,
+      __v: result.__v
+    });
 
-    res.json(dbState);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
+
+
 
 module.exports = {
     getAllStates,
