@@ -7,13 +7,10 @@ const path = require('path');
 const cors = require('cors')
 
 
-//allow netlify 
-app._router.use(cors({
-  origin: 'https://dazzling-snickerdoodle-777101.netlify.app'
-}));
-
 // Connect to MongoDB
 connectDB();
+
+app.use(cors());
 
 const app = express();
 
